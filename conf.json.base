@@ -1,0 +1,15 @@
+{
+	"show_video": true,
+	"detect_only_people": false,
+	"use_dropbox": true,
+	"dropbox_key": "6hhsoi01llslpnd",
+	"dropbox_secret": "vbmoryh8d086cin",
+	"dropbox_base_path": "/frontdoor",
+	"min_upload_seconds": 3,
+	"min_motion_frames": 8,
+	"camera_warmup_time": 2.5,
+	"delta_thresh": 5,
+	"resolution": [640, 480],
+	"fps": 16,
+	"min_area": 1500
+}
