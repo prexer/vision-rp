@@ -1,6 +1,7 @@
 # import the needed packages
 from pyimagesearch.keyclipwriter import KeyClipWriter
 from pyimagesearch.tempimage import TempImage
+from pyimagesearch.peddetect import PedDetect
 from imutils.video import VideoStream
 from dropbox.client import DropboxOAuth2FlowNoRedirect
 from dropbox.client import DropboxClient
@@ -44,6 +45,7 @@ time.sleep(conf["camera_warmup_time"])
 #initialize the key clip writer and the motionFrames
 # and consecFrames to track frames without motion
 kcw = KeyClipWriter(bufSize=conf["buffer_size"])
+pDet = PedDetect()
 consecFrames = 0
 motionFrames = 0
 p = ""
@@ -103,19 +105,25 @@ while True:
     # check to see if motion is detected
     if text == "Detected":
         motionFrames += 1
-        #kcw.update(frame)
-        
+
         # check to see if the number of frames with consistent motion is
-        # high enough
-        if motionFrames >= conf["min_motion_frames"]:
+        # a multiple of the min_motion_frames config parameter
+        if motionFrames % conf["min_motion_frames"] == 0:
+
+            #look for pedestrians
+            pedRet = pDet.count_peds(frame)
+            peds = pedRet[0]
+            if peds > 0:
+                print("Found {} Pedestrians".format(peds))
+                frame = pedRet[1]
+
             if not kcw.recording:
                 #p = TempImage(ext= conf["filetype"])
                 timestamp = datetime.datetime.now()
                 p = "./{}.{}".format(timestamp.strftime("%Y%m%d-%H%M%S"),conf["filetype"])
                 print("Path of Temp file = {}".format(p))
                 kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
-                                                
-                
+
     # motion was not detectec, increment the still counter, clear the motion counter
     else:
         consecFrames += 1
@@ -141,7 +149,7 @@ while True:
 
     # put this frame into the video buffer
     kcw.update(frame)
-    
+
     #show the frame
     cv2.imshow("Security Feed", frame)
     key  = cv2.waitKey(1) & 0xFF
@@ -156,5 +164,3 @@ if kcw.recording:
 #do some cleanup
 cv2.destroyAllWindows()
 vs.stop()
-
-
