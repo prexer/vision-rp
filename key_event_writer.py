@@ -117,12 +117,12 @@ while True:
                 print("Found {} Pedestrians".format(peds))
                 frame = pedRet[1]
 
-            if not kcw.recording:
-                #p = TempImage(ext= conf["filetype"])
-                timestamp = datetime.datetime.now()
-                p = "./{}.{}".format(timestamp.strftime("%Y%m%d-%H%M%S"),conf["filetype"])
-                print("Path of Temp file = {}".format(p))
-                kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
+                if not kcw.recording:
+                    #p = TempImage(ext= conf["filetype"])
+                    timestamp = datetime.datetime.now()
+                    p = "./{}.{}".format(timestamp.strftime("%Y%m%d-%H%M%S"),conf["filetype"])
+                    print("Path of Temp file = {}".format(p))
+                    kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
 
     # motion was not detectec, increment the still counter, clear the motion counter
     else:
