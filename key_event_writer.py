@@ -48,6 +48,7 @@ kcw = KeyClipWriter(bufSize=conf["buffer_size"])
 pDet = PedDetect()
 consecFrames = 0
 motionFrames = 0
+pedFrames = 0
 p = ""
 
 while True:
@@ -107,27 +108,31 @@ while True:
         motionFrames += 1
 
         # check to see if the number of frames with consistent motion is
-        # a multiple of the min_motion_frames config parameter
-        if motionFrames % conf["min_motion_frames"] == 0:
+        # a multiple of the ped_frame_rate config parameter
+        if motionFrames % conf["ped_frame_rate"] == 0:
 
             #look for pedestrians
+            print("Saw Motion, Checking for Peds")
             pedRet = pDet.count_peds(frame)
             peds = pedRet[0]
             if peds > 0:
-                print("Found {} Pedestrians".format(peds))
+                print("Found {} Pedestrians, {} times".format(peds, pedFrames))
                 frame = pedRet[1]
+                pedFrames += 1
 
-                if not kcw.recording:
-                    #p = TempImage(ext= conf["filetype"])
-                    timestamp = datetime.datetime.now()
-                    p = "./{}.{}".format(timestamp.strftime("%Y%m%d-%H%M%S"),conf["filetype"])
-                    print("Path of Temp file = {}".format(p))
-                    kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
+        if pedFrames >= conf["ped_min_detections"]:
+
+            if not kcw.recording:
+                #p = TempImage(ext= conf["filetype"])
+                timestamp = datetime.datetime.now()
+                p = "./{}.{}".format(timestamp.strftime("%Y%m%d-%H%M%S"),conf["filetype"])
+                print("Path of Temp file = {}".format(p))
+                kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
 
     # motion was not detectec, increment the still counter, clear the motion counter
     else:
         consecFrames += 1
-        motionFrames = 0
+        motionFrames -= 2
 
     #if we are recording and the motion has stopped for long enough
     #or we've reached the buffer length, stop recording
@@ -135,6 +140,7 @@ while True:
         print("Reached max buffer, closing the file")
         kcw.finish()
         consecFrames = 0
+        pedFrames = 0
 
         #if Dropbox is turned on, upload the file
         if conf["use_dropbox"]:

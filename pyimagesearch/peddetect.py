@@ -34,7 +34,7 @@ class PedDetect:
                 # draw the final bounding boxes
                 for (xA, yA, xB, yB) in pick:
                         cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
-                cv2.putText(image, "Peds:{}".format(len(pick)), (image.shape[1]-40,
+                cv2.putText(image, "{}:Peds".format(len(pick)), (image.shape[1]-40,
                     10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
                 # return the image with rectangles drawn over the pedestrians
