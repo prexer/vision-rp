@@ -2,9 +2,8 @@
 from pyimagesearch.keyclipwriter import KeyClipWriter
 from pyimagesearch.tempimage import TempImage
 from pyimagesearch.peddetect import PedDetect
+from pyimagesearch.dbupload import DBUpload
 from imutils.video import VideoStream
-from dropbox.client import DropboxOAuth2FlowNoRedirect
-from dropbox.client import DropboxClient
 import argparse
 import datetime
 import imutils
@@ -26,15 +25,7 @@ avg = None
 
 #if dropbox is enabled initialize DB
 if conf["use_dropbox"]:
-    # connect to dropbox and start the session authorization process
-    flow = DropboxOAuth2FlowNoRedirect(conf["dropbox_key"], conf["dropbox_secret"])
-    print("[INFO] Authorize this application: {}".format(flow.start()))
-    authCode = input("Enter auth code here: ").strip()
-
-    # finish the authorization and grab the Dropbox client
-    (accessToken, userID) = flow.finish(authCode)
-    client = DropboxClient(accessToken)
-    print("[SUCCESS] dropbox account linked")
+    uploader = DBUpload()
 
 #initialize the video stream and let the camera warmup
 print("[INFO] warming up camera...")
@@ -144,14 +135,11 @@ while True:
 
         #if Dropbox is turned on, upload the file
         if conf["use_dropbox"]:
-            print("[UPLOAD] {}".format(ts))
+            #print("[UPLOAD] {}".format(ts))
             path = "{base_path}/{timestamp}.{extension}".format(
                             base_path=conf["dropbox_base_path"], timestamp=ts,
                             extension=conf["filetype"])
-            client.put_file(path, open(p, "rb"))
-            # remove the file
-            os.remove(p)
-
+            uploader.upload_file(p, path)
 
     # put this frame into the video buffer
     kcw.update(frame)
