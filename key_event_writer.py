@@ -22,6 +22,7 @@ args = vars(ap.parse_args())
 conf = json.load(open(args["conf"]))
 client = None
 avg = None
+peds = 0
 
 #if dropbox is enabled initialize DB
 if conf["use_dropbox"]:
@@ -100,7 +101,8 @@ while True:
 
         # check to see if the number of frames with consistent motion is
         # a multiple of the ped_frame_rate config parameter
-        if (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
+        if (motionFrames == conf["min_motion_frames"]) or \
+           (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
             #look for pedestrians
             print("Saw Motion, Checking for Peds")
@@ -140,7 +142,7 @@ while True:
             uploader.upload_file(p, path, ts)
 
     # put this frame into the video buffer
-    cv2.putText(frame, "{} Humans".format(peds), (frame.shape[1] - 40, 20),
+    cv2.putText(frame, "Humans:{}".format(peds), (10, 40),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
     kcw.update(frame)
 
