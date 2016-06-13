@@ -25,7 +25,7 @@ avg = None
 
 #if dropbox is enabled initialize DB
 if conf["use_dropbox"]:
-    uploader = DBUpload()
+    uploader = DBUpload(conf["dropbox_key"], conf["dropbox_secret"])
 
 #initialize the video stream and let the camera warmup
 print("[INFO] warming up camera...")
@@ -100,16 +100,16 @@ while True:
 
         # check to see if the number of frames with consistent motion is
         # a multiple of the ped_frame_rate config parameter
-        if motionFrames % conf["ped_frame_rate"] == 0:
+        if (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
             #look for pedestrians
             print("Saw Motion, Checking for Peds")
             pedRet = pDet.count_peds(frame)
             peds = pedRet[0]
             if peds > 0:
-                print("Found {} Pedestrians, {} times".format(peds, pedFrames))
-                frame = pedRet[1]
                 pedFrames += 1
+                print("Found {} Pedestrians, {} times".format(peds, pedFrames))
+                #frame = pedRet[1]
 
         if pedFrames >= conf["ped_min_detections"]:
 
@@ -135,11 +135,10 @@ while True:
 
         #if Dropbox is turned on, upload the file
         if conf["use_dropbox"]:
-            #print("[UPLOAD] {}".format(ts))
             path = "{base_path}/{timestamp}.{extension}".format(
                             base_path=conf["dropbox_base_path"], timestamp=ts,
                             extension=conf["filetype"])
-            uploader.upload_file(p, path)
+            uploader.upload_file(p, path, ts)
 
     # put this frame into the video buffer
     kcw.update(frame)

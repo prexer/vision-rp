@@ -3,9 +3,9 @@ from dropbox.client import DropboxClient
 import os
 
 class DBUpload:
-    def __init__(self):
+    def __init__(self, key, secret):
         # connect to dropbox and start the session authorization process
-        flow = DropboxOAuth2FlowNoRedirect(conf["dropbox_key"], conf["dropbox_secret"])
+        flow = DropboxOAuth2FlowNoRedirect(key, secret)
         print("[INFO] Authorize this application: {}".format(flow.start()))
         authCode = input("Enter auth code here: ").strip()
 
@@ -14,7 +14,7 @@ class DBUpload:
         self.client = DropboxClient(accessToken)
         print("[SUCCESS] dropbox account linked")
 
-    def upload_file(source, target, timestamp):
+    def upload_file(self, source, target, timestamp):
         print("[UPLOAD] {}".format(timestamp))
         self.client.put_file(target, open(source, "rb"))
         # remove the file
