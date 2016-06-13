@@ -109,7 +109,6 @@ while True:
             if peds > 0:
                 pedFrames += 1
                 print("Found {} Pedestrians, {} times".format(peds, pedFrames))
-                #frame = pedRet[1]
 
         if pedFrames >= conf["ped_min_detections"]:
 
@@ -120,10 +119,10 @@ while True:
                 print("Path of Temp file = {}".format(p))
                 kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
 
-    # motion was not detectec, increment the still counter, clear the motion counter
+    # motion was not detectec, increment the still counter, decrement the motion counter
     else:
         consecFrames += 1
-        motionFrames -= 2
+        motionFrames -= 1
 
     #if we are recording and the motion has stopped for long enough
     #or we've reached the buffer length, stop recording
@@ -141,6 +140,8 @@ while True:
             uploader.upload_file(p, path, ts)
 
     # put this frame into the video buffer
+    cv2.putText(frame, "{} Humans".format(peds), (frame.shape[1] - 40, 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
     kcw.update(frame)
 
     #show the frame
