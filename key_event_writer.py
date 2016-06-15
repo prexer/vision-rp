@@ -38,9 +38,9 @@ time.sleep(conf["camera_warmup_time"])
 # and consecFrames to track frames without motion
 kcw = KeyClipWriter(bufSize=conf["buffer_size"])
 pDet = PedDetect()
-consecFrames = 0
-motionFrames = 0
-pedFrames = 0
+consecFrames = 0 #number of frames with no motion
+motionFrames = 0 #number of frames with motion
+boundingbox = (None,None,None,None) #motion detection x,y,w,h
 p = ""
 
 while True:
@@ -87,6 +87,16 @@ while True:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             text = "Detected"
             consecFrames = 0
+
+            # update the boundingbox
+            boundingbox[0] = min(x, boundingbox[0])
+            boundingbox[1] = min(y, boundingbox[1])
+            boundingbox[2] = max(w, boundingbox[2])
+            boundingbox[3] = max(h, boundingbox[3])
+
+    (x1,y1,w1,h1) = boundingbox
+    cv2.rectangle(frame, (x1, y1), (x1 + w1, y1 + h1), (0, 0, 255), 2)
+    boundingbox = (None,None,None,None) #motion detection x,y,w,h
 
     # draw the text and timestamp on the frame
     ts = timestamp.strftime("%A %d %B %Y %H:%M:%S%p")
