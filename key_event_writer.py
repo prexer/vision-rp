@@ -105,7 +105,7 @@ while True:
            (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
             #look for pedestrians
-            print("Saw Motion, Checking for Peds")
+            print("Saw Motion, Checking for Peds at: {}".format(ts))
             pedRet = pDet.count_peds(frame)
             peds = pedRet[0]
             if peds > 0:
@@ -133,6 +133,7 @@ while True:
         kcw.finish()
         consecFrames = 0
         pedFrames = 0
+        peds = 0
 
         #if Dropbox is turned on, upload the file
         if conf["use_dropbox"]:
