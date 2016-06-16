@@ -40,7 +40,8 @@ kcw = KeyClipWriter(bufSize=conf["buffer_size"])
 pDet = PedDetect()
 consecFrames = 0 #number of frames with no motion
 motionFrames = 0 #number of frames with motion
-boundingbox = (None,None,None,None) #motion detection x,y,w,h
+pedFrames = 0 
+boundingbox = [conf["resolution"][0],conf["resolution"][1],0,0] #motion detection x,y,w,h
 p = ""
 
 while True:
@@ -50,6 +51,7 @@ while True:
     timestamp = datetime.datetime.now()
     text = "Standby"
     consecFrames += 1
+    bbROIRatio = .5
 
     #blur, grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -91,12 +93,17 @@ while True:
             # update the boundingbox
             boundingbox[0] = min(x, boundingbox[0])
             boundingbox[1] = min(y, boundingbox[1])
-            boundingbox[2] = max(w, boundingbox[2])
-            boundingbox[3] = max(h, boundingbox[3])
+            boundingbox[2] = max(x+w, boundingbox[2])
+            boundingbox[3] = max(y+h, boundingbox[3])
 
+    boundingbox[2] = boundingbox[2]-boundingbox[0]
+    boundingbox[3] = boundingbox[3]-boundingbox[1]
     (x1,y1,w1,h1) = boundingbox
     cv2.rectangle(frame, (x1, y1), (x1 + w1, y1 + h1), (0, 0, 255), 2)
-    boundingbox = (None,None,None,None) #motion detection x,y,w,h
+    roi = frame[min(0,y1-bbROIRatio*h1):max(conf["resolution"][1],y1+bbROIRatio*2*h1),
+                min(0,x1-bbROIRatio*w1):max(conf["resolution"][0],x1+bbROIRatio*2*w1)]
+    # reset the bounding box for next time motion is found
+    boundingbox = [conf["resolution"][0],conf["resolution"][1],0,0] #motion detection x,y,w,h
 
     # draw the text and timestamp on the frame
     ts = timestamp.strftime("%A %d %B %Y %H:%M:%S%p")
@@ -113,6 +120,8 @@ while True:
         # a multiple of the ped_frame_rate config parameter
         if (motionFrames == conf["min_motion_frames"]) or \
            (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
+
+            cv2.imwrite("zoom{}.png".format(ts), roi)
 
             #look for pedestrians
             print("Saw Motion, Checking for Peds at: {}".format(ts))

@@ -14,6 +14,8 @@ class PedDetect:
                 self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
         def count_peds(self, image):
+                if image is None:
+                        return(0,image)
                 image = imutils.resize(image, width=min(400, image.shape[1]))
                 orig = image.copy()
 
