@@ -43,6 +43,8 @@ motionFrames = 0 #number of frames with motion
 pedFrames = 0 
 boundingbox = [conf["resolution"][0],conf["resolution"][1],0,0] #motion detection x,y,w,h
 p = ""
+bbROIH = conf["HeightROIfactor"]
+bbROIW = conf["WidthROIfactor"]
 
 while True:
     #grab the current frame, resize, add status Text and timestamp
@@ -51,7 +53,7 @@ while True:
     timestamp = datetime.datetime.now()
     text = "Standby"
     consecFrames += 1
-    bbROIRatio = .5
+    
 
     #blur, grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -86,7 +88,7 @@ while True:
             # compute the bounding box for the contour, draw it on the frame,
             # and update the text
             (x, y, w, h) = cv2.boundingRect(c)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
             text = "Detected"
             consecFrames = 0
 
@@ -95,15 +97,6 @@ while True:
             boundingbox[1] = min(y, boundingbox[1])
             boundingbox[2] = max(x+w, boundingbox[2])
             boundingbox[3] = max(y+h, boundingbox[3])
-
-    boundingbox[2] = boundingbox[2]-boundingbox[0]
-    boundingbox[3] = boundingbox[3]-boundingbox[1]
-    (x1,y1,w1,h1) = boundingbox
-    cv2.rectangle(frame, (x1, y1), (x1 + w1, y1 + h1), (0, 0, 255), 2)
-    roi = frame[min(0,y1-bbROIRatio*h1):max(conf["resolution"][1],y1+bbROIRatio*2*h1),
-                min(0,x1-bbROIRatio*w1):max(conf["resolution"][0],x1+bbROIRatio*2*w1)]
-    # reset the bounding box for next time motion is found
-    boundingbox = [conf["resolution"][0],conf["resolution"][1],0,0] #motion detection x,y,w,h
 
     # draw the text and timestamp on the frame
     ts = timestamp.strftime("%A %d %B %Y %H:%M:%S%p")
@@ -115,17 +108,23 @@ while True:
     # check to see if motion is detected
     if text == "Detected":
         motionFrames += 1
+        boundingbox[2] = boundingbox[2]-boundingbox[0]
+        boundingbox[3] = boundingbox[3]-boundingbox[1]
+        (x1,y1,w1,h1) = boundingbox
+        cv2.rectangle(frame, (x1, y1), (x1 + w1, y1 + h1), (0, 0, 255), 1)
+        roi = frame[max(0,y1-bbROIH*h1):min(conf["resolution"][1],y1+bbROIH*2*h1),
+                    max(0,x1-bbROIW*w1):min(conf["resolution"][0],x1+bbROIW*2*w1)]
 
         # check to see if the number of frames with consistent motion is
         # a multiple of the ped_frame_rate config parameter
         if (motionFrames == conf["min_motion_frames"]) or \
            (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
-            cv2.imwrite("zoom{}.png".format(ts), roi)
+            cv2.imwrite("{}.png".format(ts), roi)
 
             #look for pedestrians
             print("Saw Motion, Checking for Peds at: {}".format(ts))
-            pedRet = pDet.count_peds(frame)
+            pedRet = pDet.count_peds(roi)
             peds = pedRet[0]
             if peds > 0:
                 pedFrames += 1
@@ -172,6 +171,9 @@ while True:
 
     if key == ord("q"):
         break
+
+    # reset the bounding box for next time motion is found
+    boundingbox = [conf["resolution"][0],conf["resolution"][1],0,0] #motion detection x,y,w,h
 
 #if we are in the middle of recording, cleanup
 if kcw.recording:
