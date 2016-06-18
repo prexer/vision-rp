@@ -4,6 +4,7 @@ from pyimagesearch.tempimage import TempImage
 from pyimagesearch.peddetect import PedDetect
 from pyimagesearch.dbupload import DBUpload
 from imutils.video import VideoStream
+from _thread import start_new_thread
 import argparse
 import datetime
 import imutils
@@ -30,7 +31,7 @@ if conf["use_dropbox"]:
 
 #initialize the video stream and let the camera warmup
 print("[INFO] warming up camera...")
-vs = VideoStream(usePiCamera=conf["picamera"]>0).start()
+vs = VideoStream(usePiCamera=conf["picamera"]>0, resolution=(640,480)).start()
 time.sleep(conf["camera_warmup_time"])
 
 
@@ -110,6 +111,12 @@ while True:
         motionFrames += 1
         boundingbox[2] = boundingbox[2]-boundingbox[0]
         boundingbox[3] = boundingbox[3]-boundingbox[1]
+        if boundingbox[3] < 50:
+            boundingbox[1] = max(boundingbox[1]-25, 0)
+            boundingbox[3] = boundingbox[3] + 50
+        if boundingbox[2] < 50:
+            boundingbox[0] = max(boundingbox[0]-25, 0)
+            boundingbox[2] = boundingbox[2] + 50
         (x1,y1,w1,h1) = boundingbox
         cv2.rectangle(frame, (x1, y1), (x1 + w1, y1 + h1), (0, 0, 255), 1)
         roi = frame[max(0,y1-bbROIH*h1):min(conf["resolution"][1],y1+bbROIH*2*h1),
@@ -121,6 +128,11 @@ while True:
            (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
             cv2.imwrite("{}.png".format(ts), roi)
+            #if Dropbox is turned on, upload the file
+            if conf["use_dropbox"]:
+                path = "{base_path}/{timestamp}.png".format(
+                                base_path=conf["dropbox_base_path"], timestamp=ts)
+                uploader.queue_file( "{}.png".format(ts), path, ts)
 
             #look for pedestrians
             print("Saw Motion, Checking for Peds at: {}".format(ts))
@@ -158,7 +170,7 @@ while True:
             path = "{base_path}/{timestamp}.{extension}".format(
                             base_path=conf["dropbox_base_path"], timestamp=ts,
                             extension=conf["filetype"])
-            uploader.upload_file(p, path, ts)
+            uploader.queue_file( p, path, ts)
 
     # put this frame into the video buffer
     cv2.putText(frame, "Humans:{}".format(peds), (10, 40),
