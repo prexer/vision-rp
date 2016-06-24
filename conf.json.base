@@ -14,7 +14,7 @@
         "picamera": 1,
         "codec": "H264",
         "filetype": "mkv",
-        "buffer_size": 28,
+        "buffer_size": 60,
         "resize_width": 640,
         "ped_frame_rate": 20,
         "ped_min_detections": 1,
