@@ -111,12 +111,12 @@ while True:
         motionFrames += 1
         boundingbox[2] = boundingbox[2]-boundingbox[0]
         boundingbox[3] = boundingbox[3]-boundingbox[1]
-        if boundingbox[3] < 50:
-            boundingbox[1] = max(boundingbox[1]-25, 0)
-            boundingbox[3] = boundingbox[3] + 50
-        if boundingbox[2] < 50:
-            boundingbox[0] = max(boundingbox[0]-25, 0)
-            boundingbox[2] = boundingbox[2] + 50
+        if boundingbox[3] < 30:
+            boundingbox[1] = max(boundingbox[1]-15, 0)
+            boundingbox[3] = boundingbox[3] + 30
+        if boundingbox[2] < 30:
+            boundingbox[0] = max(boundingbox[0]-15, 0)
+            boundingbox[2] = boundingbox[2] + 30
         (x1,y1,w1,h1) = boundingbox
         cv2.rectangle(frame, (x1, y1), (x1 + w1, y1 + h1), (0, 0, 255), 1)
         roi = frame[max(0,y1-bbROIH*h1):min(conf["resolution"][1],y1+bbROIH*2*h1),
@@ -151,10 +151,10 @@ while True:
                 print("Path of Temp file = {}".format(p))
                 kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
 
-    # motion was not detectec, increment the still counter, decrement the motion counter
+    # motion was not detectec, increment the still counter, clear the motion counter
     else:
         consecFrames += 1
-        motionFrames -= 1
+        motionFrames = 0
 
     #if we are recording and the motion has stopped for long enough
     #or we've reached the buffer length, stop recording
@@ -173,7 +173,7 @@ while True:
             uploader.queue_file( p, path, ts)
 
     # put this frame into the video buffer
-    cv2.putText(frame, "Humans:{}".format(peds), (10, 40),
+    cv2.putText(frame, "Humans:{}:{}:{}".format(peds, motionFrames, consecFrames), (10, 40),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
     kcw.update(frame)
 
