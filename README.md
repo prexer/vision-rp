@@ -14,9 +14,22 @@ From your Raspberry pi, run the following:
 
 Then make a copy of the config.json.base and make it your own
 
-```cd vision-rp
+```
+cd vision-rp
 cp config.json.base config.json
 ```
+
+Then you'll need a dropbox account that you can logon to. You'll want to point your camera at something you want to watch for motion... and then you'll be ready to run the motion-detection system
+
+To start it:
+
+```$ python pi_surveillance.py --conf conf.json```
+
+For more info on where this all started from, see the pyvision article: http://www.pyimagesearch.com/2015/06/01/home-surveillance-and-motion-detection-with-the-raspberry-pi-python-and-opencv/
+
+
+
+
 
 
 
