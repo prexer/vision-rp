@@ -178,7 +178,8 @@ while True:
     kcw.update(frame)
 
     #show the frame
-    cv2.imshow("Security Feed", frame)
+    if conf["show_video"]:
+        cv2.imshow("Security Feed", frame)
     key  = cv2.waitKey(1) & 0xFF
 
     if key == ord("q"):
