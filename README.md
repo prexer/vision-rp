@@ -23,7 +23,7 @@ Then you'll need a dropbox account that you can logon to. You'll want to point y
 
 To start it:
 
-```$ python pi_surveillance.py --conf conf.json```
+```$ python key_event_writer.py --conf conf.json```
 
 For more info on where this all started from, see the pyvision article: http://www.pyimagesearch.com/2015/06/01/home-surveillance-and-motion-detection-with-the-raspberry-pi-python-and-opencv/
 
