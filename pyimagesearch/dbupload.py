@@ -1,6 +1,7 @@
 from dropbox.client import DropboxOAuth2FlowNoRedirect
 from dropbox.client import DropboxClient
 import os
+import json
 import time
 from queue import Queue
 from threading import Thread
@@ -8,13 +9,25 @@ from threading import Thread
 
 class DBUpload:       
     def __init__(self, key, secret):
-        # connect to dropbox and start the session authorization process
-        flow = DropboxOAuth2FlowNoRedirect(key, secret)
-        print("[INFO] Authorize this application: {}".format(flow.start()))
-        authCode = input("Enter auth code here: ").strip()
+        #See if I already have a stored access_token
+        try:
+            with open('.dbtoken.json', 'r') as json_data_file:
+                  data = json.load(json_data_file)
+            accessToken = data['accessToken']
+        except:
+            accessToken = None
+        if accessToken is None:
+            # connect to dropbox and start the session authorization process
+            flow = DropboxOAuth2FlowNoRedirect(key, secret)
+            print("[INFO] Authorize this application: {}".format(flow.start()))
+            authCode = input("Enter auth code here: ").strip()
 
-        # finish the authorization and grab the Dropbox client
-        (accessToken, userID) = flow.finish(authCode)
+            # finish the authorization and grab the Dropbox client
+            (accessToken, userID) = flow.finish(authCode)
+            data = {'accessToken' : accessToken}
+            with open('.dbtoken.json', 'w') as outfile:
+                  json.dump(data, outfile)
+                  
         self.client = DropboxClient(accessToken)
         print("[SUCCESS] dropbox account linked")
 
