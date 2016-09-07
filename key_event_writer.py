@@ -12,6 +12,9 @@ import json
 import time
 import cv2
 import os
+import logging
+
+logging.basicConfig(filename='camera.log',level=logging.DEBUG)
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -30,7 +33,7 @@ if conf["use_dropbox"]:
     uploader = DBUpload(conf["dropbox_key"], conf["dropbox_secret"])
 
 #initialize the video stream and let the camera warmup
-print("[INFO] warming up camera...")
+logging.info("warming up camera...")
 vs = VideoStream(usePiCamera=conf["picamera"]>0, resolution=(640,480)).start()
 time.sleep(conf["camera_warmup_time"])
 
@@ -41,7 +44,7 @@ kcw = KeyClipWriter(bufSize=conf["buffer_size"])
 pDet = PedDetect()
 consecFrames = 0 #number of frames with no motion
 motionFrames = 0 #number of frames with motion
-pedFrames = 0 
+pedFrames = 0
 boundingbox = [conf["resolution"][0],conf["resolution"][1],0,0] #motion detection x,y,w,h
 p = ""
 bbROIH = conf["HeightROIfactor"]
@@ -54,7 +57,7 @@ while True:
     timestamp = datetime.datetime.now()
     text = "Standby"
     consecFrames += 1
-    
+
 
     #blur, grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -62,7 +65,7 @@ while True:
 
     #if the average frame is None, initialize it
     if avg is None:
-        print("[INFO] starting background model...")
+        logging.info("starting background model...")
         avg = gray.copy().astype("float")
         #rawCapture.truncate(0)
         continue
@@ -135,12 +138,12 @@ while True:
                 uploader.queue_file( "{}.png".format(ts), path, ts)
 
             #look for pedestrians
-            print("Saw Motion, Checking for Peds at: {}".format(ts))
+            logging.info("Saw Motion, Checking for Peds at: {}".format(ts))
             pedRet = pDet.count_peds(roi)
             peds = pedRet[0]
             if peds > 0:
                 pedFrames += 1
-                print("Found {} Pedestrians, {} times".format(peds, pedFrames))
+                logging.info("Found {} Pedestrians, {} times".format(peds, pedFrames))
 
         if pedFrames >= conf["ped_min_detections"]:
 
@@ -148,7 +151,7 @@ while True:
                 #p = TempImage(ext= conf["filetype"])
                 timestamp = datetime.datetime.now()
                 p = "./{}.{}".format(timestamp.strftime("%Y%m%d-%H%M%S"),conf["filetype"])
-                print("Path of Temp file = {}".format(p))
+                logging.debug("Path of Temp file = {}".format(p))
                 kcw.start(p, cv2.VideoWriter_fourcc(*conf["codec"]),conf["fps"])
 
     # motion was not detectec, increment the still counter, clear the motion counter
@@ -159,7 +162,7 @@ while True:
     #if we are recording and the motion has stopped for long enough
     #or we've reached the buffer length, stop recording
     if kcw.recording and consecFrames >= conf["buffer_size"]:
-        print("Reached max buffer, closing the file")
+        logging.debug("Reached max buffer, closing the file")
         kcw.finish()
         consecFrames = 0
         pedFrames = 0
