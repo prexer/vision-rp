@@ -14,7 +14,7 @@ import cv2
 import os
 import logging
 
-logging.basicConfig(filename='camera.log',level=logging.DEBUG)
+logging.basicConfig(filename='camera.log',level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -131,10 +131,12 @@ while True:
            (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
             cv2.imwrite("{}.png".format(ts), roi)
+            filedate = timestamp.strftime("%A %d %B %Y")
+
             #if Dropbox is turned on, upload the file
             if conf["use_dropbox"]:
-                path = "{base_path}/{timestamp}.png".format(
-                                base_path=conf["dropbox_base_path"], timestamp=ts)
+                path = "{base_path}/{ds}/{timestamp}.png".format(
+                                base_path=conf["dropbox_base_path"], ds=filedate, timestamp=ts)
                 uploader.queue_file( "{}.png".format(ts), path, ts)
 
             #look for pedestrians
