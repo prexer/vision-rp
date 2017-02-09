@@ -16,7 +16,7 @@ import logging
 
 logging.basicConfig(filename='camera.log',level=logging.DEBUG, format='%(asctime)s %(message)s')
 
-# construct the argument parser and parse the arguments
+# construct the argument parser and parse the arguments 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--conf", required=True,
                 help="path to the JSON configuration file")
@@ -53,6 +53,7 @@ bbROIW = conf["WidthROIfactor"]
 while True:
     #grab the current frame, resize, add status Text and timestamp
     frame = vs.read()
+    cv2.Flip(frame, flipMode=-1)
     frame = imutils.resize(frame, width=conf["resize_width"])
     timestamp = datetime.datetime.now()
     text = "Standby"
