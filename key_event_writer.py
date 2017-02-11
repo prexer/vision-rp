@@ -54,7 +54,7 @@ while True:
     #grab the current frame, resize, add status Text and timestamp
     frame = vs.read()
     frame = imutils.resize(frame, width=conf["resize_width"])
-    frame = frame.rotate(frame, 180)
+    frame = imutils.rotate(frame, 180)
     timestamp = datetime.datetime.now()
     text = "Standby"
     consecFrames += 1
