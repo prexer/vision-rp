@@ -54,7 +54,6 @@ while True:
     #grab the current frame, resize, add status Text and timestamp
     frame = vs.read()
     frame = imutils.resize(frame, width=conf["resize_width"])
-    frame = imutils.rotate(frame, 180)
     timestamp = datetime.datetime.now()
     text = "Standby"
     consecFrames += 1
@@ -173,7 +172,7 @@ while True:
 
         #if Dropbox is turned on, upload the file
         if conf["use_dropbox"]:
-            path = "{base_path}/{ds}/{timestamp}.{extension}".format(
+            path = "{base_path}/{ds}/ {timestamp}.{extension}".format(
                             base_path=conf["dropbox_base_path"], timestamp=ts,
                             extension=conf["filetype"])
             uploader.queue_file( p, path, ts)
