@@ -173,7 +173,7 @@ while True:
         #if Dropbox is turned on, upload the file
         if conf["use_dropbox"]:
             path = "{base_path}/{ds}/ {timestamp}.{extension}".format(
-                            base_path=conf["dropbox_base_path"], timestamp=ts,
+                            base_path=conf["dropbox_base_path"],ds=filedate, timestamp=ts,
                             extension=conf["filetype"])
             uploader.queue_file( p, path, ts)
 
