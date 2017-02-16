@@ -103,7 +103,7 @@ while True:
             boundingbox[3] = max(y+h, boundingbox[3])
 
     # draw the text and timestamp on the frame
-    ts = timestamp.strftime("%A %d %B %Y %H:%M:%S%p")
+    ts = timestamp.strftime("%d %B %Y %H:%M:%S%p")
     cv2.putText(frame, "Status: {}".format(text), (10, 20),
             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
@@ -131,7 +131,7 @@ while True:
            (motionFrames % conf["ped_frame_rate"] == 0 and pedFrames < conf["ped_min_detections"]):
 
             cv2.imwrite("{}.png".format(ts), roi)
-            filedate = timestamp.strftime("%A %d %B %Y")
+            filedate = timestamp.strftime("%d %B %Y")
 
             #if Dropbox is turned on, upload the file
             if conf["use_dropbox"]:
